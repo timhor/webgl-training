@@ -86,6 +86,76 @@ function setupBuffer(
 }
 
 /**
+ * Sets up a Vertex Array Object (VAO) for our triangle.
+ *
+ * A VAO is like a container that stores information about how to read our
+ * triangle's data. Think of it as a recipe that tells WebGL:
+ * 1. Where to find the triangle's vertex data (in which buffer)
+ * 2. How to interpret that data (e.g., every 3 numbers represent a point in 3D
+ *    space)
+ *
+ * Using a VAO is beneficial because:
+ * 1. It saves time: We set up the "recipe" once and can reuse it many times.
+ * 2. It reduces mistakes: Once set up correctly, we're less likely to
+ *    accidentally use the wrong data or interpret it incorrectly.
+ * 3. It makes our code cleaner: We can group all the setup for one object (like
+ *    our triangle) in one place.
+ *
+ * In more complex scenes with many objects, VAOs become even more helpful as
+ * they allow us to easily switch between different objects and their data.
+ *
+ * @param gl The WebGL 2 rendering context
+ * @param program The WebGL program
+ * @param triangleBuffer The buffer containing the triangle vertex data
+ * @returns The created VAO
+ */
+function setupTriangleVAO(
+  gl: WebGL2RenderingContext,
+  program: WebGLProgram,
+  triangleBuffer: WebGLBuffer
+): WebGLVertexArrayObject | null {
+  // Create a new VAO
+  const vao = gl.createVertexArray();
+  if (!vao) {
+    console.error('Failed to create VAO');
+    return null;
+  }
+
+  // Start setting up our "recipe"
+  gl.bindVertexArray(vao);
+
+  // Tell WebGL which buffer contains our triangle data
+  gl.bindBuffer(gl.ARRAY_BUFFER, triangleBuffer);
+
+  // Get the location of the 'position' attribute in our shader
+  const positionAttributeLocation = gl.getAttribLocation(program, 'aPosition');
+
+  // Enable the 'position' attribute
+  gl.enableVertexAttribArray(positionAttributeLocation);
+
+  // Tell WebGL how to read the data from our buffer:
+  // - 3 numbers per vertex
+  // - Those numbers are floats
+  // - Don't normalize the data
+  // - Each set of 3 numbers is 3 floats * 4 bytes per float = 12 bytes away
+  //   from the previous one
+  // - Start reading from the beginning of the buffer (offset 0)
+  gl.vertexAttribPointer(
+    positionAttributeLocation,
+    3,
+    gl.FLOAT,
+    false,
+    3 * 4,
+    0
+  );
+
+  // We're done setting up, so we can unbind the VAO
+  gl.bindVertexArray(null);
+
+  return vao;
+}
+
+/**
  * Compiles a shader of the given type with the provided source code.
  *
  * Shaders are small programs that run on the GPU. They come in two types:
@@ -337,11 +407,9 @@ function main() {
     projectionMatrixLocation,
   } = setupMatrices(gl, program, canvas);
 
-  // Set up vertex attributes
-  const positionAttributeLocation = gl.getAttribLocation(program, 'aPosition');
-  gl.enableVertexAttribArray(positionAttributeLocation);
-  gl.bindBuffer(gl.ARRAY_BUFFER, triangleBuffer);
-  gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
+  // Set up the triangle vertex array object, telling WebGL how to interpret the
+  // triangle data
+  const triangleVertexArray = setupTriangleVAO(gl, program, triangleBuffer);
 
   // Perform initial resize to set up canvas and viewport
   handleResize(gl, canvas, projectionMatrix, projectionMatrixLocation);
@@ -372,7 +440,11 @@ function main() {
     gl.uniformMatrix4fv(modelViewMatrixLocation, false, modelViewMatrix);
 
     // Draw the triangle
+    gl.bindVertexArray(triangleVertexArray);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // It's good practice to unbind things when we're done with them
+    gl.bindVertexArray(null);
 
     // Request next frame
     requestAnimationFrame(render);

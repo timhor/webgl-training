@@ -7,36 +7,8 @@ import { mat4 } from 'gl-matrix';
 // how our shape is drawn.
 import vertexShaderSource from './vertex-shader.glsl?raw';
 import fragmentShaderSource from './fragment-shader.glsl?raw';
-
-// Global variables to store WebGL context and canvas
-let gl: WebGL2RenderingContext | null = null;
-let canvas: HTMLCanvasElement | null = null;
-
-/**
- * Sets up the WebGL context and canvas.
- *
- * The canvas is a drawing surface in HTML where we can render graphics. The
- * WebGL context provides us with the WebGL functions we need to draw on this
- * canvas.
- */
-function setupWebGL(): {
-  gl: WebGL2RenderingContext;
-  canvas: HTMLCanvasElement;
-} | null {
-  canvas = document.getElementById('webgl-canvas') as HTMLCanvasElement;
-  if (!canvas) {
-    console.error('Canvas element not found');
-    return null;
-  }
-
-  gl = canvas.getContext('webgl2');
-  if (!gl) {
-    console.error('WebGL 2 not supported');
-    return null;
-  }
-
-  return { gl, canvas };
-}
+import { context } from './webgl-context';
+import { Player } from './player';
 
 /**
  * Creates the data for a triangle.
@@ -75,10 +47,9 @@ function createTriangleData(): Float32Array {
  * A buffer is a way of sending data to the GPU. Here, we're sending the
  * positions of our triangle's vertices.
  */
-function setupBuffer(
-  gl: WebGL2RenderingContext,
-  data: Float32Array
-): WebGLBuffer | null {
+function setupBuffer(data: Float32Array): WebGLBuffer | null {
+  const gl = context.gl;
+
   const buffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
   gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
@@ -104,16 +75,16 @@ function setupBuffer(
  * In more complex scenes with many objects, VAOs become even more helpful as
  * they allow us to easily switch between different objects and their data.
  *
- * @param gl The WebGL 2 rendering context
  * @param program The WebGL program
  * @param triangleBuffer The buffer containing the triangle vertex data
  * @returns The created VAO
  */
 function setupTriangleVAO(
-  gl: WebGL2RenderingContext,
   program: WebGLProgram,
   triangleBuffer: WebGLBuffer
 ): WebGLVertexArrayObject | null {
+  const gl = context.gl;
+
   // Create a new VAO
   const vao = gl.createVertexArray();
   if (!vao) {
@@ -164,11 +135,9 @@ function setupTriangleVAO(
  *
  * Shaders are written in GLSL (OpenGL Shading Language), which is similar to C.
  */
-function compileShader(
-  gl: WebGL2RenderingContext,
-  type: number,
-  source: string
-): WebGLShader | null {
+function compileShader(type: number, source: string): WebGLShader | null {
+  const gl = context.gl;
+
   const shader = gl.createShader(type);
   if (!shader) {
     console.error('Failed to create shader');
@@ -195,10 +164,11 @@ function compileShader(
  * defines how to process the geometry and color of what's being rendered.
  */
 function createProgram(
-  gl: WebGL2RenderingContext,
   vertexShader: WebGLShader,
   fragmentShader: WebGLShader
 ): WebGLProgram | null {
+  const gl = context.gl;
+
   const program = gl.createProgram();
   if (!program) {
     console.error('Failed to create program');
@@ -224,10 +194,11 @@ function createProgram(
  * This function compiles our vertex and fragment shaders and links them into a
  * program.
  */
-function setupShaders(gl: WebGL2RenderingContext): WebGLProgram | null {
-  const vertexShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+function setupShaders(): WebGLProgram | null {
+  const gl = context.gl;
+
+  const vertexShader = compileShader(gl.VERTEX_SHADER, vertexShaderSource);
   const fragmentShader = compileShader(
-    gl,
     gl.FRAGMENT_SHADER,
     fragmentShaderSource
   );
@@ -235,11 +206,11 @@ function setupShaders(gl: WebGL2RenderingContext): WebGLProgram | null {
     return null;
   }
 
-  return createProgram(gl, vertexShader, fragmentShader);
+  return createProgram(vertexShader, fragmentShader);
 }
 
 /**
- * Sets up the matrices for projection and model-view transformations.
+ * Creates the view matrix, which positions and orients the camera in the world.
  *
  * In 3D graphics, matrices are used to transform the positions of vertices.
  * This is crucial for:
@@ -287,42 +258,22 @@ function setupShaders(gl: WebGL2RenderingContext): WebGLProgram | null {
  * render our 3D scene on a 2D screen, handling perspective, camera position,
  * and object transformations.
  */
-function setupMatrices(
-  gl: WebGL2RenderingContext,
-  program: WebGLProgram,
-  canvas: HTMLCanvasElement
-) {
-  const projectionMatrix = mat4.create();
-  // Parameters: field of view (45 degrees), aspect ratio, near plane, far plane
-  mat4.perspective(
-    projectionMatrix,
-    Math.PI / 4,
-    canvas.width / canvas.height,
-    0.1,
-    100
-  );
+function getViewMatrix() {
+  const viewMatrix = mat4.create();
+  // Move the scene 3 units away from the camera (camera is at 0,0,0 looking
+  // down -Z axis)
+  mat4.translate(viewMatrix, viewMatrix, [
+    -context.cameraPosition[0],
+    -context.cameraPosition[1],
+    -3.0,
+  ]);
+  mat4.scale(viewMatrix, viewMatrix, [
+    context.cameraZoom,
+    context.cameraZoom,
+    1,
+  ]);
 
-  const modelViewMatrix = mat4.create();
-  // Move the scene 3 units away from the camera (camera is at 0,0,0 looking down -Z axis)
-  mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -3.0]);
-
-  const projectionMatrixLocation = gl.getUniformLocation(
-    program,
-    'uProjectionMatrix'
-  );
-  const modelViewMatrixLocation = gl.getUniformLocation(
-    program,
-    'uModelViewMatrix'
-  );
-
-  gl.uniformMatrix4fv(projectionMatrixLocation, false, projectionMatrix);
-
-  return {
-    modelViewMatrix,
-    modelViewMatrixLocation,
-    projectionMatrix,
-    projectionMatrixLocation,
-  };
+  return viewMatrix;
 }
 
 /**
@@ -332,12 +283,9 @@ function setupMatrices(
  * Resizing is important for responsive design, ensuring our WebGL content looks
  * good on different screen sizes and when the browser window is resized.
  */
-function handleResize(
-  gl: WebGL2RenderingContext,
-  canvas: HTMLCanvasElement,
-  projectionMatrix: mat4,
-  projectionMatrixLocation: WebGLUniformLocation | null
-) {
+function handleResize(projectionMatrixLocation: WebGLUniformLocation | null) {
+  const { gl, canvas } = context;
+
   // Update canvas size, taking into account the device pixel ratio for sharp
   // rendering on high DPI displays
   const dpr = window.devicePixelRatio || 1;
@@ -348,10 +296,13 @@ function handleResize(
   gl.viewport(0, 0, canvas.width, canvas.height);
 
   // Recalculate projection matrix with new aspect ratio
-  mat4.perspective(
-    projectionMatrix,
-    Math.PI / 4,
-    canvas.width / canvas.height,
+  const screenSize = context.getScreenSize();
+  const projectionMatrix = mat4.ortho(
+    mat4.create(),
+    -screenSize[0] / 2,
+    screenSize[0] / 2,
+    screenSize[1] / 2,
+    -screenSize[1] / 2,
     0.1,
     100
   );
@@ -375,23 +326,17 @@ function handleResize(
  * 7. Start the render loop
  */
 function main() {
-  // Set up WebGL
-  const setup = setupWebGL();
-  if (!setup) {
-    return;
-  }
-
-  ({ gl, canvas } = setup);
+  const gl = context.gl;
 
   // Create our triangle data and set up a buffer with it
   const triangleData = createTriangleData();
-  const triangleBuffer = setupBuffer(gl, triangleData);
+  const triangleBuffer = setupBuffer(triangleData);
   if (!triangleBuffer) {
     return;
   }
 
   // Set up shaders and create program
-  const program = setupShaders(gl);
+  const program = setupShaders();
   if (!program) {
     return;
   }
@@ -399,27 +344,28 @@ function main() {
   // Use the program
   gl.useProgram(program);
 
-  // Set up matrices
-  const {
-    modelViewMatrix,
-    modelViewMatrixLocation,
-    projectionMatrix,
-    projectionMatrixLocation,
-  } = setupMatrices(gl, program, canvas);
-
   // Set up the triangle vertex array object, telling WebGL how to interpret the
   // triangle data
-  const triangleVertexArray = setupTriangleVAO(gl, program, triangleBuffer);
+  const triangleVertexArray = setupTriangleVAO(program, triangleBuffer);
 
-  // Perform initial resize to set up canvas and viewport
-  handleResize(gl, canvas, projectionMatrix, projectionMatrixLocation);
+  // Perform initial resize to set up the projection matrix
+  const projectionMatrixLocation = gl.getUniformLocation(
+    program,
+    'uProjectionMatrix'
+  );
+  const modelViewMatrixLocation = gl.getUniformLocation(
+    program,
+    'uModelViewMatrix'
+  );
+  handleResize(projectionMatrixLocation);
 
   // Set up resize handler
   window.addEventListener('resize', () => {
-    if (gl && canvas && projectionMatrix && projectionMatrixLocation) {
-      handleResize(gl, canvas, projectionMatrix, projectionMatrixLocation);
-    }
+    handleResize(projectionMatrixLocation);
   });
+
+  // Create our player
+  const player = new Player();
 
   /**
    * Render function to be called each frame.
@@ -436,10 +382,18 @@ function main() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
+    // Get the view matrix for this frame
+    const viewMatrix = getViewMatrix();
+
+    // Get the model matrix for the player, and combine it with the view matrix
+    const modelMatrix = player.getModelMatrix();
+    const modelViewMatrix = mat4.create();
+    mat4.multiply(modelViewMatrix, viewMatrix, modelMatrix);
+
     // Set model-view matrix
     gl.uniformMatrix4fv(modelViewMatrixLocation, false, modelViewMatrix);
 
-    // Draw the triangle
+    // Draw the player
     gl.bindVertexArray(triangleVertexArray);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 

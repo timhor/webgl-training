@@ -1,4 +1,4 @@
-// Exercise 4: Adding a camera to the scene
+// Exercise 5: Adding a camera to the scene
 
 import { vec3 } from 'gl-matrix';
 

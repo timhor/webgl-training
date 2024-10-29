@@ -18,3 +18,16 @@
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
     ```
 - WebGL deals with physical pixels, not CSS pixels, so we need to account for that by multiplying the canvas width and height by `window.devicePixelRatio`
+
+Exercise: paint a solid background onto the screen using WebGL
+
+## Lesson 2 - GPU data - 2024-10-28
+
+- The entire screen WebGL renders lives inside a 2x2x2 cube (coords go from -1 to 1 in each axis)
+- Buffer is a way of storing data (usually vertex data) on the GPU
+  - Data goes into the GPU once, then if you need to change the scene, the data is already there
+- WebGL expects a flat array of vertices, so not `vec3` data structures for instance
+- If you intend to change the data on the GPU frequently, use `gl.DYNAMIC_DRAW` instead of `gl.STATIC_DRAW`
+- Vertex shaders can be used to modify data on the GPU itself rather than reuploading it
+
+Exercise: create a mesh abstraction, upload some vertices to the buffer (since this won't be visible, the 'pass criteria' is lack of console errors)

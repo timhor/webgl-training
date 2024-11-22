@@ -31,3 +31,52 @@ Exercise: paint a solid background onto the screen using WebGL
 - Vertex shaders can be used to modify data on the GPU itself rather than reuploading it
 
 Exercise: create a mesh abstraction, upload some vertices to the buffer (since this won't be visible, the 'pass criteria' is lack of console errors)
+
+## Lesson 3 - Shaders - 2024-11-18
+
+- Shader = a program that runs on your GPU to execute rendering logic
+  - Vertex shader outputs the position of vertices
+  - Fragment shader determines the final colour of each pixel, linearly interpolated going from vertex to vertex
+- You can further subdivide to increase the number of vertices
+- Shaders can operate with different levels of precisions, more often on mobile GPUs for performance reasons. For floating point numbers (which is what you use most of the time in vertex shaders), we want to specify high precision via `precision highp float`. Without this, it won't look correct.
+- `in` lets the shader receive the data stored in the buffer
+  - Example:
+    ```glsl
+    in vec3 aPosition
+    ```
+  - `in` also implies that the specified variable will have a different value for every vertex
+- This is in contrast to `uniform` where it's the same for every vertex
+  - Example:
+    ```glsl
+    uniform vec3 uColor
+    ```
+  - If you just want a flat colour, using `uniform` means you don't need to store the same colour for every vertex and only have to store it once
+- `out` is used to pass data from the vertex shader to the fragment shader
+  - Example:
+    ```glsl
+    out vec4 fragColor
+    ```
+- Positions:
+  - Example:
+    ```glsl
+    gl_Position = vec4(0.0, 0.0, 0.0, 5.0);
+    ```
+  - Why `vec4` instead of `vec3`: the 4th parameter acts like a divisor, where each of the other 3 values is divided by that number. This is used in perspective cameras where things further away appear smaller.
+- Good practice to prefix each variable name with something that represents where the data is coming from:
+  - Uniform - prefix `u` to indicate it's coming from a uniform
+  - Attribute - prefix `a` to indicate it's coming from a vertex attribute
+- Spreading is automatic, so we can do
+
+  ```glsl
+  in vec3 aPosition;
+
+  void main() {
+    gl_Position = vec4(aPosition, 1.0);
+  }
+  ```
+
+- Vertex shaders and fragment shaders are always linked together as a single unit - they're run together as a _program_.
+- When drawing a mesh, it will use whatever program is currently bound, and you bind a program by doing `this.gl.useProgram()`
+- `getAttribLocation` and `getUniformLocation` allow you to get a reference to variables defined in GLSL
+
+Exercise: write a vertex and fragment shader, then implement a program abstraction that can compile and link the two shaders (since this won't be visible, the 'pass criteria' is lack of console errors)

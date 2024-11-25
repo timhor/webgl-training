@@ -39,6 +39,7 @@ Exercise: create a mesh abstraction, upload some vertices to the buffer (since t
   - Fragment shader determines the final colour of each pixel, linearly interpolated going from vertex to vertex
 - You can further subdivide to increase the number of vertices
 - Shaders can operate with different levels of precisions, more often on mobile GPUs for performance reasons. For floating point numbers (which is what you use most of the time in vertex shaders), we want to specify high precision via `precision highp float`. Without this, it won't look correct.
+  - This is only necessary for the fragment shader, where there is no default precision value. Vertex shaders are set to `highp` by default ([source](https://stackoverflow.com/a/28557554)).
 - `in` lets the shader receive the data stored in the buffer
   - Example:
     ```glsl

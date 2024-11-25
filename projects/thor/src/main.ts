@@ -32,6 +32,15 @@ function main() {
     fragmentShaderSource
   );
 
+  const colourUniformLocation = program.getUniformLocation('uColour');
+
+  renderManager.addRenderCallback(() => {
+    const pulse = (Math.sin(performance.now() / 500) + 1) / 2;
+
+    program.setUniform3fv(colourUniformLocation, vec3.fromValues(pulse, 1, 1));
+    triangle.render(program, 'aPosition');
+  });
+
   renderManager.startRendering();
 }
 

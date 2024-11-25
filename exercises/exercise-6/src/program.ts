@@ -1,3 +1,5 @@
+import { mat4, vec3 } from 'gl-matrix';
+
 /**
  * Represents a WebGL program, which combines compiled vertex and fragment
  * shaders.
@@ -166,5 +168,67 @@ export class Program {
    */
   getUniformLocation(name: string): WebGLUniformLocation | null {
     return this.gl.getUniformLocation(this.program, name);
+  }
+
+  /**
+   * Sets a `float` uniform variable in the program.
+   *
+   * @param location The location of the uniform variable in the program, as
+   * returned by {@link getUniformLocation}.
+   * @param value The value to set the uniform to.
+   */
+  setUniform1f(location: WebGLUniformLocation | null, value: number): void {
+    if (location == null) {
+      throw new Error('Uniform location is null');
+    }
+
+    this.use();
+
+    this.gl.uniform1f(location, value);
+
+    // Unbind the program to avoid accidental changes
+    this.gl.useProgram(null);
+  }
+
+  /**
+   * Sets a `vec3` uniform variable in the program.
+   *
+   * @param location The location of the uniform variable in the program, as
+   * returned by {@link getUniformLocation}.
+   * @param value The value to set the uniform to.
+   */
+  setUniform3f(location: WebGLUniformLocation | null, value: vec3): void {
+    if (location == null) {
+      throw new Error('Uniform location is null');
+    }
+
+    this.use();
+
+    this.gl.uniform3fv(location, value);
+
+    // Unbind the program to avoid accidental changes
+    this.gl.useProgram(null);
+  }
+
+  /**
+   * Sets a `mat4` uniform variable in the program.
+   *
+   * @param location The location of the uniform variable in the program, as
+   * returned by {@link getUniformLocation}.
+   * @param value The value to set the uniform to.
+   */
+  setUniformMatrix4f(location: WebGLUniformLocation | null, value: mat4): void {
+    if (location == null) {
+      throw new Error('Uniform location is null');
+    }
+
+    this.use();
+
+    // The second argument is unused and must always be false (it makes no sense
+    // why it's part of the API)
+    this.gl.uniformMatrix4fv(location, false, value);
+
+    // Unbind the program to avoid accidental changes
+    this.gl.useProgram(null);
   }
 }

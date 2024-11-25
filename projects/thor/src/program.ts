@@ -1,3 +1,5 @@
+import { vec3 } from 'gl-matrix';
+
 export class Program {
   // The result of compiling and linking vertex and fragment shaders
   public program: WebGLProgram;
@@ -68,5 +70,13 @@ export class Program {
 
   getUniformLocation(name: string): WebGLUniformLocation | null {
     return this.gl.getUniformLocation(this.program, name);
+  }
+
+  setUniform3fv(location: WebGLUniformLocation | null, value: vec3): void {
+    if (location) {
+      this.use();
+      this.gl.uniform3fv(location, value);
+      this.gl.useProgram(null);
+    }
   }
 }

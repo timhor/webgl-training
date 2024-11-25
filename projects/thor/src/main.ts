@@ -1,6 +1,10 @@
 import { vec3 } from 'gl-matrix';
 import { Mesh } from './mesh';
 import { RenderManager } from './render-manager';
+import { Program } from './program';
+
+import vertexShaderSource from './shaders/vertex-shader.glsl?raw';
+import fragmentShaderSource from './shaders/fragment-shader.glsl?raw';
 
 function main() {
   const canvas = document.getElementById('webgl-canvas');
@@ -21,6 +25,12 @@ function main() {
     // Bottom right of the triangle
     vec3.fromValues(0.5, -0.5, 0),
   ]);
+
+  const program = new Program(
+    renderManager.gl,
+    vertexShaderSource,
+    fragmentShaderSource
+  );
 
   renderManager.startRendering();
 }

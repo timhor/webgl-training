@@ -46,13 +46,12 @@ function main() {
     vertexShaderSource,
     fragmentShaderSource
   );
+  const colourUniform = program.getUniformLocation('uColour');
 
   // Every frame, render the triangle using the program
   canvas.onRender(() => {
     // Set the colour of the triangle
-    const colourUniform = program.getUniformLocation('uColour');
-    program.use(); // We need to bind the program before setting the uniform
-    canvas.gl.uniform3fv(
+    program.setUniform3f(
       colourUniform,
       // Red, pulsating
       vec3.fromValues(Math.sin(performance.now() * 0.005) / 2 + 0.5, 0, 0)

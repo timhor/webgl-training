@@ -21,6 +21,12 @@ export class Triangle {
    */
   private program: Program;
 
+  // Uniform variables that we'll use
+  private viewProjectionMatrixUniform: WebGLUniformLocation | null;
+  private colour1Uniform: WebGLUniformLocation | null;
+  private colour2Uniform: WebGLUniformLocation | null;
+  private timeUniform: WebGLUniformLocation | null;
+
   /**
    * Creates a new instance of our Triangle, which will render a simple triangle to the
    * screen.
@@ -58,37 +64,37 @@ export class Triangle {
 
     // Create a program that we'll use to render the triangle
     this.program = new Program(gl, vertexShaderSource, fragmentShaderSource);
+    this.viewProjectionMatrixUniform = this.program.getUniformLocation(
+      'uViewProjectionMatrix'
+    );
+    this.colour1Uniform = this.program.getUniformLocation('uColour1');
+    this.colour2Uniform = this.program.getUniformLocation('uColour2');
+    this.timeUniform = this.program.getUniformLocation('uTime');
   }
 
   /**
    * Renders the triangle to the screen. This method should be called every frame.
    */
   public render() {
-    // We need to bind the program before setting any uniforms
-    this.program.use();
-
     // Set the view-projection matrix
-    const viewProjectionMatrixUniform = this.program.getUniformLocation(
-      'uViewProjectionMatrix'
-    );
-    this.gl.uniformMatrix4fv(
-      viewProjectionMatrixUniform,
-      // The second argument is unused and must always be false (it makes no
-      // sense why it's part of the API)
-      false,
+    this.program.setUniformMatrix4f(
+      this.viewProjectionMatrixUniform,
       this.camera.getViewProjectionMatrix()
     );
 
     // Set the colour of the triangle
-    const colour1Uniform = this.program.getUniformLocation('uColour1');
-    this.gl.uniform3fv(colour1Uniform, vec3.fromValues(1, 0.18, 0.569));
-    const colour2Uniform = this.program.getUniformLocation('uColour2');
-    this.gl.uniform3fv(colour2Uniform, vec3.fromValues(1, 0.753, 0.18));
+    this.program.setUniform3f(
+      this.colour1Uniform,
+      vec3.fromValues(1, 0.18, 0.569)
+    );
+    this.program.setUniform3f(
+      this.colour2Uniform,
+      vec3.fromValues(1, 0.753, 0.18)
+    );
 
     // Set the time uniform
-    const timeUniform = this.program.getUniformLocation('uTime');
-    this.gl.uniform1f(
-      timeUniform,
+    this.program.setUniform1f(
+      this.timeUniform,
       performance.now() / 1000 // Convert to seconds
     );
 

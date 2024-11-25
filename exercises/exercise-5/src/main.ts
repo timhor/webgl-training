@@ -50,6 +50,10 @@ function main() {
     vertexShaderSource,
     fragmentShaderSource
   );
+  const viewProjectionMatrixUniform = program.getUniformLocation(
+    'uViewProjectionMatrix'
+  );
+  const colourUniform = program.getUniformLocation('uColour');
 
   // Every frame, render the triangle using the program
   canvas.onRender(() => {
@@ -58,24 +62,14 @@ function main() {
     camera.position[0] = Math.sin(performance.now() * 0.001);
     camera.position[1] = Math.cos(performance.now() * 0.001);
 
-    // We need to bind the program before setting any uniforms
-    program.use();
-
     // Set the view-projection matrix
-    const viewProjectionMatrixUniform = program.getUniformLocation(
-      'uViewProjectionMatrix'
-    );
-    canvas.gl.uniformMatrix4fv(
+    program.setUniformMatrix4f(
       viewProjectionMatrixUniform,
-      // The second argument is unused and must always be false (it makes no
-      // sense why it's part of the API)
-      false,
       camera.getViewProjectionMatrix()
     );
 
     // Set the colour of the triangle
-    const colourUniform = program.getUniformLocation('uColour');
-    canvas.gl.uniform3fv(
+    program.setUniform3f(
       colourUniform,
       // Red, pulsating
       vec3.fromValues(Math.sin(performance.now() * 0.005) / 2 + 0.5, 0, 0)

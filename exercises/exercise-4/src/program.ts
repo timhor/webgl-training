@@ -1,3 +1,5 @@
+import { vec3 } from 'gl-matrix';
+
 /**
  * Represents a WebGL program, which combines compiled vertex and fragment
  * shaders.
@@ -166,5 +168,25 @@ export class Program {
    */
   getUniformLocation(name: string): WebGLUniformLocation | null {
     return this.gl.getUniformLocation(this.program, name);
+  }
+
+  /**
+   * Sets a `vec3` uniform variable in the program.
+   *
+   * @param location The location of the uniform variable in the program, as
+   * returned by {@link getUniformLocation}.
+   * @param value The value to set the uniform to.
+   */
+  setUniform3f(location: WebGLUniformLocation | null, value: vec3): void {
+    if (location == null) {
+      throw new Error('Uniform location is null');
+    }
+
+    this.use();
+
+    this.gl.uniform3fv(location, value);
+
+    // Unbind the program to avoid accidental changes
+    this.gl.useProgram(null);
   }
 }

@@ -135,9 +135,10 @@ export class Mesh {
     // a triangle. This corresponds to how we've defined our mesh geometry.
     this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertices.length);
 
-    // Clean up any state that we set. This is good practice as it avoids us acc
+    // Clean up any state that we set. This is good practice as it avoids us
     // accidentally using the wrong state later.
     this.gl.disableVertexAttribArray(positionAttributeLocation);
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+    this.gl.useProgram(null);
   }
 }

@@ -1,5 +1,5 @@
 export class RenderManager {
-  public gl: WebGLRenderingContext;
+  public gl: WebGL2RenderingContext;
   public canvas: HTMLCanvasElement;
 
   constructor(canvas: Element | null) {
@@ -7,7 +7,7 @@ export class RenderManager {
       throw new Error('Canvas element not found');
     }
 
-    const gl = canvas.getContext('webgl2') as WebGLRenderingContext;
+    const gl = canvas.getContext('webgl2');
     if (!gl) {
       throw new Error('WebGL2 not supported');
     }

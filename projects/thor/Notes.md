@@ -4,6 +4,10 @@
 - Find reference implementations in `exercises`
 - Do the actual exercise under your own folder in `projects`
 
+## Docs
+
+- OpenGL docs are more detailed than MDN. Prefix the term you want to search for with `gl`, e.g. `enableVertexAttribArray` -> `gl enableVertexAttribArray`.
+
 ## Lesson 1 - WebGL fundamentals and boilerplate - 2024-10-21
 
 - If you want to change something, you need to re-render everything in a frame. There's no partial re-rendering of certain components like in React.
@@ -78,6 +82,27 @@ Exercise: create a mesh abstraction, upload some vertices to the buffer (since t
 
 - Vertex shaders and fragment shaders are always linked together as a single unit - they're run together as a _program_.
 - When drawing a mesh, it will use whatever program is currently bound, and you bind a program by doing `this.gl.useProgram()`
-- `getAttribLocation` and `getUniformLocation` allow you to get a reference to variables defined in GLSL
+- `getAttribLocation` and `getUniformLocation` allow you to get a reference to variables defined in GLSL. They return an integer which is like an alias for the variable (more efficient than referencing it as a string).
 
 Exercise: write a vertex and fragment shader, then implement a program abstraction that can compile and link the two shaders (since this won't be visible, the 'pass criteria' is lack of console errors)
+
+## Lesson 4 - Drawing - 2024-11-25
+
+- Input variables in a vertex shader are disabled by default. Use `enableVertexAttribArray` to enable them.
+- `vertexAttribPointer` is used to tell WebGL how to read the data from the buffer. It's like a mapping from the buffer to the shader.
+- `vertexAttribPointer` parameters:
+  - Say we define position coordinates as `(x, y, z)` and texture coordinates as `(u, v)`. It's common for this data to be stored sequentially so the numbers are adjacent in memory, meaning the GPU can access them quickly:
+    ```
+    x1, y1, z1, u1, v2 | x2, y2, z2, u2, v2 | x3, y3, z3, u3, v3
+    ```
+  - `offset` controls where in this array to read the first attribute from
+  - `stride` controls how many elements to read before reaching the next attribute
+  - In this example:
+    - Position: `offset` = `0`, `stride` = `5`
+    - Texture: `offset` = `3`, `stride` = `5`
+  - `stride` of `0` is a special case where the attributes are tightly packed, meaning they're adjacent in memory and WebGL will automatically calculate it for you
+  - Multiply `stride` (and `offset`, if it's not `0`), by the number of bytes per element
+- `drawArrays`:
+  - First param is the type of primitive to draw
+  - Second and third params control how much of the buffer to render
+- For better performance, we can encapsulate all the `gl.bind` calls in a vertex array object (VAO) - this is a way to store all the state needed to render a mesh in a single object

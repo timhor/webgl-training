@@ -2,7 +2,7 @@
 
 import { Camera } from './camera';
 import { RenderManager } from './render-manager';
-import { Triangle } from './triangle';
+import { TriangleObject } from './triangle-object';
 
 /**
  * Main function to set up WebGL and start the render loop.
@@ -15,7 +15,7 @@ function main() {
   const camera = new Camera(canvas.canvas);
 
   // Create a simple triangle mesh that we want to render
-  const triangle = new Triangle(canvas.gl, camera);
+  const triangle = new TriangleObject(canvas.gl, camera);
 
   // Every frame, render the triangle using the program
   canvas.onRender(() => {

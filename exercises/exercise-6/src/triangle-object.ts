@@ -4,13 +4,13 @@ import { Camera } from './camera';
 import { Mesh } from './mesh';
 import { Program } from './program';
 
-import vertexShaderSource from './shaders/vertex-shader.glsl?raw';
-import fragmentShaderSource from './shaders/fragment-shader.glsl?raw';
+import vertexShaderSource from './shaders/triangle-vertex-shader.glsl?raw';
+import fragmentShaderSource from './shaders/triangle-fragment-shader.glsl?raw';
 
 /**
- * Represents our triangle mesh, containing all the logic needed to render it.
+ * Represents our triangle object, containing all the logic needed to render it.
  */
-export class Triangle {
+export class TriangleObject {
   /**
    * The mesh that defines the triangle's geometry.
    */

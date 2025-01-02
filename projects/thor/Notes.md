@@ -123,3 +123,15 @@ Exercise: get triangle displaying on screen using the mesh and program abstracti
   - The same concept applies if we use a 3x3 matrix in 2D space, but generally everything on the GPU is done in 3D space
 
 Exercise: implement your own camera class and wire it up with the vertex shader, and play around with animating the camera
+
+## Lesson 6 - Shader animations - 2024-12-09
+
+- There's no 'differential rendering' - if anything on the screen has changed, everything has to be re-rendered
+- The vertex and fragment shaders must be linked because the vertex shader can pass values to the fragment shader
+  - Vertex shader is per vertex, fragment shader is per pixel
+- Use a graphing calculator to compute the formula for a repeating animation, e.g. <https://www.desmos.com/calculator>
+  - Depends on what you're building, e.g. `mix()` expects between 0 and 1, so the formula should produce a value between 0 and 1
+- If you've defined a uniform but don't use it, it'll be `null`
+- Use `performance.now()` for time-based animations as you'll get higher precision and pacing; using `Date.now()` will look much more choppy
+
+Exercise: implement some cool animation effects in the shader

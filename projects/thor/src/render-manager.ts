@@ -4,11 +4,7 @@ export class RenderManager {
 
   private onRenderCallbacks: (() => void)[] = [];
 
-  constructor(canvas: Element | null) {
-    if (!canvas || !(canvas instanceof HTMLCanvasElement)) {
-      throw new Error('Canvas element not found');
-    }
-
+  constructor(canvas: HTMLCanvasElement) {
     const gl = canvas.getContext('webgl2');
     if (!gl) {
       throw new Error('WebGL2 not supported');

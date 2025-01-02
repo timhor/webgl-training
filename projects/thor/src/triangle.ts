@@ -11,7 +11,9 @@ export class TriangleObject {
   private program: Program;
 
   private viewProjectionMatrixUniform: WebGLUniformLocation | null;
-  private colourUniform: WebGLUniformLocation | null;
+  private colour1Uniform: WebGLUniformLocation | null;
+  private colour2Uniform: WebGLUniformLocation | null;
+  private timeUniform: WebGLUniformLocation | null;
 
   constructor(private gl: WebGL2RenderingContext) {
     //        (0.0, 0.5, 0.0)
@@ -38,7 +40,9 @@ export class TriangleObject {
     this.viewProjectionMatrixUniform = this.program.getUniformLocation(
       'uViewProjectionMatrix'
     );
-    this.colourUniform = this.program.getUniformLocation('uColour');
+    this.colour1Uniform = this.program.getUniformLocation('uColour1');
+    this.colour2Uniform = this.program.getUniformLocation('uColour2');
+    this.timeUniform = this.program.getUniformLocation('uTime');
   }
 
   public render(camera: Camera) {
@@ -47,12 +51,15 @@ export class TriangleObject {
       camera.getViewProjectionMatrix()
     );
 
-    const pulseR = Math.sin(performance.now() / 500) + 1;
-    const pulseG = Math.sin(performance.now() / 800) + 1;
-    const pulseB = Math.sin(performance.now() / 300) + 1;
+    this.program.setUniform1f(this.timeUniform, performance.now() / 1000);
+
     this.program.setUniform3fv(
-      this.colourUniform,
-      vec3.fromValues(pulseR, pulseG, pulseB)
+      this.colour1Uniform,
+      vec3.fromValues(1, 0.18, 0.569)
+    );
+    this.program.setUniform3fv(
+      this.colour2Uniform,
+      vec3.fromValues(1, 0.753, 0.18)
     );
 
     this.mesh.render(this.program, 'aPosition');

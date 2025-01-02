@@ -1,4 +1,4 @@
-import { vec3 } from 'gl-matrix';
+import { mat4, vec3 } from 'gl-matrix';
 
 export class Program {
   // The result of compiling and linking vertex and fragment shaders
@@ -73,10 +73,22 @@ export class Program {
   }
 
   setUniform3fv(location: WebGLUniformLocation | null, value: vec3): void {
-    if (location) {
-      this.use();
-      this.gl.uniform3fv(location, value);
-      this.gl.useProgram(null);
+    if (location == null) {
+      throw new Error('Uniform location is null');
     }
+
+    this.use();
+    this.gl.uniform3fv(location, value);
+    this.gl.useProgram(null);
+  }
+
+  setUniformMat4(location: WebGLUniformLocation | null, value: mat4): void {
+    if (location == null) {
+      throw new Error('Uniform location is null');
+    }
+
+    this.use();
+    this.gl.uniformMatrix4fv(location, false, value);
+    this.gl.useProgram(null);
   }
 }

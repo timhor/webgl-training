@@ -106,3 +106,20 @@ Exercise: write a vertex and fragment shader, then implement a program abstracti
   - First param is the type of primitive to draw
   - Second and third params control how much of the buffer to render
 - For better performance, we can encapsulate all the `gl.bind` calls in a vertex array object (VAO) - this is a way to store all the state needed to render a mesh in a single object
+
+Exercise: get triangle displaying on screen using the mesh and program abstractions
+
+## Lesson 5 - Coordinate systems - 2024-12-02
+
+- <https://www.3blue1brown.com/lessons/linear-transformations>
+- Clip space ranges from -1 to 1 in all axes
+- Anything outside of a 'clip space' will not be visible
+- A camera allows you to change how you the scene
+- View matrix defines the operations of the camera
+- Projection matrix refers to something that projects a scene onto clip space (e.g. making everything smaller so it fits into clip space)
+- These are combined into a view projection matrix which allows us to move the camera and scale the scene accordingly
+  - It effectively maps world coordinates to clip space coordinates
+- We use a 4x4 matrix to be able to customise the origin (we use the additional column to specify translation in 3D space)
+  - The same concept applies if we use a 3x3 matrix in 2D space, but generally everything on the GPU is done in 3D space
+
+Exercise: implement your own camera class and wire it up with the vertex shader, and play around with animating the camera

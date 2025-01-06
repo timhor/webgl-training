@@ -135,3 +135,17 @@ Exercise: implement your own camera class and wire it up with the vertex shader,
 - Use `performance.now()` for time-based animations as you'll get higher precision and pacing; using `Date.now()` will look much more choppy
 
 Exercise: implement some cool animation effects in the shader
+
+## Lesson 7 - Exercise shareback - 2025-01-06
+
+- Uniforms are for the entire program, so you can use the same uniforms in the vertex shader and fragment shader
+- Where possible, opt for multiplication in mathematical operations as it's a tiny bit faster than dividing
+  - E.g. multiply by 0.001 instead of dividing by 1000
+  - Exception is in cases like doing `/3` which is preferable over vs. `*0.333333`
+- Doing calculations in the vertex shader is more performant as they are only done once per vertex rather than once per pixel
+  - You can pass along the output in an `out` variable
+  - Caveat: value will be linearly interpolated between vertices, so this may not always work for your purposes
+- Backface culling:
+  - n 3D apps, the 'inside' of a 3D object or the 'back' of a 2D object in 3D space is not visible, because it would be a waste of compute
+  - The order you specify the vertices is what determines the front and back of an object (clockwise by default). this means if you accidentally set vertices in a counterclockwise order, the object will not be visible.
+  - This is NOT enabled by default

@@ -1,22 +1,3 @@
-interface TextureOptions {
-  /**
-   * Filtering method when texture is minified (shrunk). Default is LINEAR_MIPMAP_LINEAR.
-   */
-  minFilter?: number;
-  /**
-   * Filtering method when texture is magnified (enlarged). Default is LINEAR.
-   */
-  magFilter?: number;
-  /**
-   * Wrapping method for the U coordinate. Default is CLAMP_TO_EDGE.
-   */
-  wrapU?: number;
-  /**
-   * Wrapping method for the V coordinate. Default is CLAMP_TO_EDGE.
-   */
-  wrapV?: number;
-}
-
 /**
  * Represents a WebGL texture, which can be used to apply images or patterns to
  * 3D objects.
@@ -43,12 +24,10 @@ export class Texture {
    * @param gl The WebGL rendering context.
    * @param image The image to use as the texture. This can be an
    * HTMLImageElement, HTMLCanvasElement, or similar source.
-   * @param options Optional configuration for the texture.
    */
   constructor(
     private gl: WebGL2RenderingContext,
     image: TexImageSource,
-    options: TextureOptions = {}
   ) {
     // Create a new texture object
     const texture = this.gl.createTexture();
@@ -76,28 +55,6 @@ export class Texture {
       image // source: The image data
     );
 
-    // Set texture parameters with defaults
-    this.gl.texParameteri(
-      this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_MIN_FILTER,
-      options.minFilter ?? this.gl.LINEAR_MIPMAP_LINEAR
-    );
-    this.gl.texParameteri(
-      this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_MAG_FILTER,
-      options.magFilter ?? this.gl.LINEAR
-    );
-    this.gl.texParameteri(
-      this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_WRAP_S,
-      options.wrapU ?? this.gl.CLAMP_TO_EDGE
-    );
-    this.gl.texParameteri(
-      this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_WRAP_T,
-      options.wrapV ?? this.gl.CLAMP_TO_EDGE
-    );
-
     // Generate mipmaps (smaller versions of the texture for when it's viewed
     // from far away)
     this.gl.generateMipmap(this.gl.TEXTURE_2D);
@@ -119,14 +76,11 @@ export class Texture {
    *
    * @param gl The WebGL rendering context.
    * @param url The URL of the image to load.
-   * @param options Optional configuration for the texture (same as
-   * constructor).
    * @returns A Promise that resolves to the new Texture instance.
    */
   static async fromURL(
     gl: WebGL2RenderingContext,
     url: string,
-    options: TextureOptions = {}
   ): Promise<Texture> {
     // Create and load the image
     const image = new Image();
@@ -139,7 +93,7 @@ export class Texture {
     });
 
     // Create and return the texture
-    return new Texture(gl, image, options);
+    return new Texture(gl, image);
   }
 
   /**

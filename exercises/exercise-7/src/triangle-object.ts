@@ -61,16 +61,16 @@ export class TriangleObject {
     // In this 2D example, z is always 0.
     this.mesh = new Mesh(this.gl, [
       // Top of the triangle
-      { position: vec3.fromValues(0, 0.5, 0), uv: vec2.fromValues(0.5, 0.6) },
+      { position: vec3.fromValues(0, 0.5, 0), uv: vec2.fromValues(0.5, 1.0) },
       // Bottom left of the triangle
       {
         position: vec3.fromValues(-0.5, -0.5, 0),
-        uv: vec2.fromValues(0.4, 0.4),
+        uv: vec2.fromValues(0.0, 0.0),
       },
       // Bottom right of the triangle
       {
         position: vec3.fromValues(0.5, -0.5, 0),
-        uv: vec2.fromValues(0.6, 0.4),
+        uv: vec2.fromValues(1.0, 0.0),
       },
     ]);
 
@@ -82,22 +82,7 @@ export class TriangleObject {
     this.textureUniform = this.program.getUniformLocation('uTexture');
 
     // Load the texture for the triangle
-    Texture.fromURL(
-      gl,
-      textureUrl,
-      // Options to control how the texture is sampled
-      {
-        // When we need to upscale the texture, use the nearest pixel value. This
-        // creates a 'pixelated' effect.
-        magFilter: gl.NEAREST,
-        // When we sample outside the texture's bounds in the horizontal (U)
-        // direction, wrap the texture around (repeat it)
-        wrapU: gl.REPEAT,
-        // When we sample outside the texture's bounds in the vertical (V)
-        // direction, wrap the texture around (repeat it)
-        wrapV: gl.REPEAT,
-      }
-    ).then((texture) => {
+    Texture.fromURL(gl, textureUrl).then((texture) => {
       this.texture = texture;
     });
   }

@@ -149,3 +149,28 @@ Exercise: implement some cool animation effects in the shader
   - n 3D apps, the 'inside' of a 3D object or the 'back' of a 2D object in 3D space is not visible, because it would be a waste of compute
   - The order you specify the vertices is what determines the front and back of an object (clockwise by default). this means if you accidentally set vertices in a counterclockwise order, the object will not be visible.
   - This is NOT enabled by default
+
+## Lesson 8 - Textures - 2025-02-03
+
+- A texture is like a line/grid/cube of pixels (depending on how many dimensions you're working with)
+- If the texture coordinates exceed the range of the texture, WebGL will repeat the texture in an infinite grid
+- Texture coordinates map to the pixel that gets rendered
+- WebGL calls can sometimes fail if the context is lost. This can happen, for example, if the user is on a laptop with low battery and it switches from a dedicated GPU to an integrated GPU. If this happens, it's on the application developer to handle this gracefully and recreate everything.
+- `texImage2D` takes in data and uploads it to the GPU.
+- Mipmaps contain the base image, the image at 50% size, 25% size, etc. This is used to improve performance when rendering textures at different sizes.
+- If not using mipmaps, set the `level` parameter to `0`
+- To use a texture in a shader, you need to define a `uniform` with a `sampler2D` type. A sampler is a way to look up pixels from given texture coordinates.
+- Need to bind a texture to a sampler
+- Texture coordinates are often defined in terms of `u` and `v` (corresponding to `x` and `y`)
+- In the fragment shader, use the `texture` function to sample the texture
+- When loading images from a URL: the browser loads images top down, but WebGL loads them bottom up. This means you need to flip the image vertically before uploading it to the GPU:
+  ```ts
+  this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+  ```
+
+Exercise: get a texture displayed in WebGL correctly
+
+Stretch exercise:
+
+- Make the image appear in greyscale without modifying the image itself
+- Make the image appear twice as big as it actually is (i.e. zoomed in)

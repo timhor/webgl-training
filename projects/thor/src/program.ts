@@ -72,6 +72,16 @@ export class Program {
     return this.gl.getUniformLocation(this.program, name);
   }
 
+  setUniform1i(location: WebGLUniformLocation | null, value: number): void {
+    if (location == null) {
+      throw new Error('Uniform location is null');
+    }
+
+    this.use();
+    this.gl.uniform1i(location, value);
+    this.gl.useProgram(null);
+  }
+
   setUniform1f(location: WebGLUniformLocation | null, value: number): void {
     if (location == null) {
       throw new Error('Uniform location is null');

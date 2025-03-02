@@ -184,6 +184,17 @@ Stretch exercise:
 
 Exercise: implement an effect over the texture
 
-Stretch exercise:
+Stretch exercise: add your own flair to the effect
 
-- Add your own flair to the effect
+## Lesson 10 - Instanced rendering - 2025-02-17
+
+- There is a lot of state management to render a single triangle. Replicating this for multiple triangles would quickly become unwieldy.
+- A better approach is to use a single draw call for multiple triangles. We can store attributes about each triangle in a buffer (e.g. position, colour) and use a single draw call to render all of them. This is called instanced rendering.
+- We can define the attributes for each triangle in the vertex shader, and these will be used per instance automatically
+- WebGL buffers have a fixed size, so we need to know the instance count upfront
+- You can prefix instance attributes with `i` to indicate they are per instance
+- For instanced rendering, you must also call `vertexAttribDivisor` to change how the buffer is read per attribute. Instead of reading per vertex, it will read the buffer per instance.
+  - The `divisor` parameter represents the number of instances to render per buffer entry. Generally this will be 1, unless you have a weird scenario where for example you want 3 triangles to share the exact same instance data.
+- Instead of `drawArrays`, we use `drawArraysInstanced` to render multiple instances
+
+Exercise: implement instancing and update the instance values per frame

@@ -9,8 +9,9 @@ precision highp float;
 // uniform vec3 uColour2;
 
 uniform sampler2D uTexture;
+uniform sampler2D uNoiseTexture;
 
-// uniform float uTime;
+uniform float uTime;
 
 // in float vGradientAmount;
 // in vec3 vPosition;
@@ -23,10 +24,12 @@ void main() {
   // Multiply by 2*PI so the cycle repeats every 1 unit along the x-axis
   // gradientAmount = (-cos((gradientAmount) * 2.0 * PI) + 1.0) / 2.0;
 
-  // Using a single colour channel makes it greyscale
-  vec3 textureColor = texture(uTexture, vUv).rrr;
+  vec3 textureColor = texture(uTexture, vUv).rgb;
+
+  // Only sample one channel since the noise texture is grayscale
+  float noise = texture(uNoiseTexture, 0.5 * vUv.xy + vec2(uTime * 0.1)).r;
 
   // vec3 finalColour = mix(uColour1, uColour2, gradientAmount);
 
-  fragColour = vec4(textureColor, 1.0);
+  fragColour = vec4(textureColor * noise, 1.0);
 }

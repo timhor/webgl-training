@@ -6,7 +6,6 @@ in vec3 aPosition;
 in vec2 aUv;
 
 uniform mat4 uViewProjectionMatrix;
-// uniform float uTime;
 
 // out float vGradientAmount;
 // out vec3 vPosition;
@@ -23,7 +22,7 @@ void main() {
   // vPosition = aPosition;
   // Using a multiplier makes the image appear twice as big since the respective
   // coordinates are halved, meaning less of the texture is shown
-  vUv = aUv * 0.5;
+  vUv = aUv;
 
   gl_Position = uViewProjectionMatrix * vec4(aPosition, 1.0);
 }

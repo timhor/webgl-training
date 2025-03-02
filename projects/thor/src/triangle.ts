@@ -7,6 +7,7 @@ import fragmentShaderSource from './shaders/triangle-fragment-shader.glsl?raw';
 import { Camera } from './camera';
 
 import textureUrl from './assets/test-texture.png?url';
+import noiseTextureUrl from './assets/noise-texture.png?url';
 import { Texture } from './texture';
 
 export class TriangleObject {
@@ -14,12 +15,14 @@ export class TriangleObject {
   private program: Program;
 
   private texture: Texture | null = null;
+  private noiseTexture: Texture | null = null;
 
   private viewProjectionMatrixUniform: WebGLUniformLocation | null;
   private colour1Uniform: WebGLUniformLocation | null;
   private colour2Uniform: WebGLUniformLocation | null;
   private timeUniform: WebGLUniformLocation | null;
-  private samplerUniform: WebGLUniformLocation | null;
+  private textureUniform: WebGLUniformLocation | null;
+  private noiseTextureUniform: WebGLUniformLocation | null;
 
   constructor(private gl: WebGL2RenderingContext) {
     //        (0.0, 0.5, 0.0)
@@ -49,10 +52,14 @@ export class TriangleObject {
     this.colour1Uniform = this.program.getUniformLocation('uColour1');
     this.colour2Uniform = this.program.getUniformLocation('uColour2');
     this.timeUniform = this.program.getUniformLocation('uTime');
-    this.samplerUniform = this.program.getUniformLocation('uTexture');
+    this.textureUniform = this.program.getUniformLocation('uTexture');
+    this.noiseTextureUniform = this.program.getUniformLocation('uNoiseTexture');
 
     Texture.fromURL(gl, textureUrl).then((texture) => {
       this.texture = texture;
+    });
+    Texture.fromURL(gl, noiseTextureUrl).then((noiseTexture) => {
+      this.noiseTexture = noiseTexture;
     });
   }
 
@@ -62,7 +69,7 @@ export class TriangleObject {
       camera.getViewProjectionMatrix()
     );
 
-    // this.program.setUniform1f(this.timeUniform, performance.now() / 1000);
+    this.program.setUniform1f(this.timeUniform, performance.now() / 1000);
 
     // this.program.setUniform3fv(
     //   this.colour1Uniform,
@@ -73,12 +80,19 @@ export class TriangleObject {
     //   vec3.fromValues(1, 0.753, 0.18)
     // );
 
-    const textureSampler = 0;
-    this.program.setUniform1i(this.samplerUniform, textureSampler);
+    let textureUnit = 0;
     if (this.texture) {
-      this.texture.bind(textureSampler);
+      this.texture.bind(textureUnit);
     }
+    this.program.setUniform1i(this.textureUniform, textureUnit++);
+
+    if (this.noiseTexture) {
+      this.noiseTexture.bind(textureUnit);
+    }
+    this.program.setUniform1i(this.noiseTextureUniform, textureUnit++);
 
     this.mesh.render(this.program, 'aPosition', 'aUv');
+
+    Texture.unbindAll(this.gl, textureUnit - 1);
   }
 }

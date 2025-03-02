@@ -32,14 +32,58 @@ export class TriangleObject {
     //           /      \
     //          /________\
     // (-0.5,-0.5,0.0)  (0.5,-0.5,0.0)
-    this.mesh = new Mesh(this.gl, [
-      // Top of the triangle
-      { position: vec3.fromValues(0, 0.5, 0), uv: vec2.fromValues(0.5, 1) },
-      // Bottom left of the triangle
-      { position: vec3.fromValues(-0.5, -0.5, 0), uv: vec2.fromValues(0, 0) },
-      // Bottom right of the triangle
-      { position: vec3.fromValues(0.5, -0.5, 0), uv: vec2.fromValues(1, 0) },
-    ]);
+    this.mesh = new Mesh(
+      this.gl,
+      [
+        // Top of the triangle
+        { position: vec3.fromValues(0, 0.5, 0), uv: vec2.fromValues(0.5, 1) },
+        // Bottom left of the triangle
+        { position: vec3.fromValues(-0.5, -0.5, 0), uv: vec2.fromValues(0, 0) },
+        // Bottom right of the triangle
+        { position: vec3.fromValues(0.5, -0.5, 0), uv: vec2.fromValues(1, 0) },
+      ],
+      [
+        {
+          name: 'iOffset',
+          size: 2,
+        },
+        {
+          name: 'iColor',
+          size: 3,
+        },
+      ]
+    );
+    this.mesh.setInstanceCount(3);
+    this.mesh.setInstanceProperty(
+      0,
+      'iOffset',
+      vec2.fromValues(0, -0.5) as Float32Array
+    );
+    this.mesh.setInstanceProperty(
+      0,
+      'iColor',
+      vec3.fromValues(1.0, 0.5, 0.5) as Float32Array
+    );
+    this.mesh.setInstanceProperty(
+      1,
+      'iOffset',
+      vec2.fromValues(0.6, 0.6) as Float32Array
+    );
+    this.mesh.setInstanceProperty(
+      1,
+      'iColor',
+      vec3.fromValues(0.5, 1.0, 0.5) as Float32Array
+    );
+    this.mesh.setInstanceProperty(
+      2,
+      'iOffset',
+      vec2.fromValues(-0.6, 0.6) as Float32Array
+    );
+    this.mesh.setInstanceProperty(
+      2,
+      'iColor',
+      vec3.fromValues(0.5, 0.5, 1.0) as Float32Array
+    );
 
     this.program = new Program(
       this.gl,

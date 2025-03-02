@@ -16,8 +16,8 @@ function main() {
   const triangleObject = new TriangleObject(renderManager.gl);
 
   renderManager.addRenderCallback(() => {
-    // camera.zoom = (Math.sin(performance.now() / 500) + 1) / 2 + 0.3;
-    // camera.position[0] = Math.sin(performance.now() / 250) / 10;
+    camera.zoom = (Math.sin(performance.now() / 500) + 1) / 5 + 0.5;
+    camera.position[0] = Math.sin(performance.now() / 250) / 10;
     triangleObject.render(camera);
   });
 

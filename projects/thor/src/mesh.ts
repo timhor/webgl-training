@@ -6,17 +6,33 @@ interface Vertex {
   uv: vec2;
 }
 
+interface InstanceAttributeDefinition {
+  // Name of the attribute in the shader
+  name: string;
+  // How many floats per instance
+  size: number;
+}
+
+interface InstanceAttribute extends InstanceAttributeDefinition {
+  offset: number;
+}
+
 const elementsPerPosition = 3;
 const elementsPerUV = 2;
 const elementsPerVertex = elementsPerPosition + elementsPerUV;
 
 export class Mesh {
   public buffer: WebGLBuffer;
+  public instanceBuffer: WebGLBuffer;
+  private instanceCount: number = 0;
+  private instanceAttributes: Map<string, InstanceAttribute> = new Map();
+  private instanceAttributeSize: number = 0;
   private vertexCount: number;
 
   constructor(
     private gl: WebGL2RenderingContext,
-    vertices: Vertex[]
+    vertices: Vertex[],
+    instanceAttributeDefinition: InstanceAttributeDefinition[] = []
   ) {
     const buffer = this.gl.createBuffer();
     if (!buffer) {
@@ -24,6 +40,23 @@ export class Mesh {
     }
 
     this.buffer = buffer;
+
+    const instanceBuffer = this.gl.createBuffer();
+    if (!instanceBuffer) {
+      throw new Error('Failed to create instance buffer');
+    }
+    this.instanceBuffer = instanceBuffer;
+
+    let offset = 0;
+    for (const attr of instanceAttributeDefinition) {
+      this.instanceAttributes.set(attr.name, {
+        ...attr,
+        offset,
+      });
+      offset += attr.size;
+      this.instanceAttributeSize += attr.size;
+    }
+
     this.vertexCount = vertices.length;
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
 
@@ -41,6 +74,44 @@ export class Mesh {
     }
 
     this.gl.bufferData(this.gl.ARRAY_BUFFER, vertexData, this.gl.STATIC_DRAW);
+
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+  }
+
+  setInstanceCount(instanceCount: number) {
+    this.instanceCount = instanceCount;
+
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceBuffer);
+
+    const instanceData = new Float32Array(
+      instanceCount * this.instanceAttributeSize
+    );
+    this.gl.bufferData(
+      this.gl.ARRAY_BUFFER,
+      instanceData,
+      this.gl.DYNAMIC_DRAW
+    );
+
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+  }
+
+  setInstanceProperty<T extends Float32Array>(
+    index: number,
+    name: string,
+    data: T
+  ) {
+    const attribute = this.instanceAttributes.get(name);
+    if (!attribute) {
+      throw new Error(`Attribute ${name} not found`);
+    }
+
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceBuffer);
+    this.gl.bufferSubData(
+      this.gl.ARRAY_BUFFER,
+      (index * this.instanceAttributeSize + attribute.offset) *
+        Float32Array.BYTES_PER_ELEMENT,
+      data
+    );
 
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
   }
@@ -77,7 +148,30 @@ export class Mesh {
       elementsPerPosition * Float32Array.BYTES_PER_ELEMENT
     );
 
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, this.vertexCount);
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.instanceBuffer);
+    for (const [name, attribute] of this.instanceAttributes) {
+      const attributeLocation = program.getAttribLocation(name);
+      this.gl.enableVertexAttribArray(attributeLocation);
+
+      this.gl.vertexAttribPointer(
+        attributeLocation,
+        attribute.size,
+        this.gl.FLOAT,
+        false,
+        this.instanceAttributeSize * Float32Array.BYTES_PER_ELEMENT,
+        attribute.offset * Float32Array.BYTES_PER_ELEMENT
+      );
+
+      this.gl.vertexAttribDivisor(attributeLocation, 1);
+    }
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+
+    this.gl.drawArraysInstanced(
+      this.gl.TRIANGLES,
+      0,
+      this.vertexCount,
+      this.instanceCount
+    );
 
     // Reset / cleanup
     this.gl.disableVertexAttribArray(positionAttributeLocation);

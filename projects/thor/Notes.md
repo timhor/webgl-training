@@ -174,3 +174,16 @@ Stretch exercise:
 
 - Make the image appear in greyscale without modifying the image itself
 - Make the image appear twice as big as it actually is (i.e. zoomed in)
+
+## Lesson 9 - Texture effects - 2025-02-10
+
+- When we create a texture, there are certain parameters we can set to tell the GPU how to sample the texture. To make a texture repeat, set the `wrapS` and `wrapT` parameters to `REPEAT` (this is also the default behaviour). `S` and `T` refer to the x and y axes of the texture respectively.
+- The default value of the param is `LINEAR_MIPMAP_LINEAR`, which picks the nearest mipmap levels and linearly interpolates between them for smooth rendering. If this remains unchanged, we must include `this.gl.generateMipmap`, otherwise it will try to access uninitialised memory and nothing will render on screen.
+- To generate mipmaps, we progressively take the average of each 2x2 block of pixels to create the next level of the mipmap. This is done until we reach a 1x1 texture.
+- Multiplying textures together will produce an overlay effect
+
+Exercise: implement an effect over the texture
+
+Stretch exercise:
+
+- Add your own flair to the effect

@@ -56,28 +56,13 @@ export class TriangleObject {
     this.mesh.setInstanceCount(3);
     this.mesh.setInstanceProperty(
       0,
-      'iOffset',
-      vec2.fromValues(0, -0.5) as Float32Array
-    );
-    this.mesh.setInstanceProperty(
-      0,
       'iColor',
       vec3.fromValues(1.0, 0.5, 0.5) as Float32Array
     );
     this.mesh.setInstanceProperty(
       1,
-      'iOffset',
-      vec2.fromValues(0.6, 0.6) as Float32Array
-    );
-    this.mesh.setInstanceProperty(
-      1,
       'iColor',
       vec3.fromValues(0.5, 1.0, 0.5) as Float32Array
-    );
-    this.mesh.setInstanceProperty(
-      2,
-      'iOffset',
-      vec2.fromValues(-0.6, 0.6) as Float32Array
     );
     this.mesh.setInstanceProperty(
       2,
@@ -115,15 +100,6 @@ export class TriangleObject {
 
     this.program.setUniform1f(this.timeUniform, performance.now() / 1000);
 
-    // this.program.setUniform3fv(
-    //   this.colour1Uniform,
-    //   vec3.fromValues(1, 0.18, 0.569)
-    // );
-    // this.program.setUniform3fv(
-    //   this.colour2Uniform,
-    //   vec3.fromValues(1, 0.753, 0.18)
-    // );
-
     let textureUnit = 0;
     if (this.texture) {
       this.texture.bind(textureUnit);
@@ -134,6 +110,31 @@ export class TriangleObject {
       this.noiseTexture.bind(textureUnit);
     }
     this.program.setUniform1i(this.noiseTextureUniform, textureUnit++);
+
+    this.mesh.setInstanceProperty(
+      0,
+      'iOffset',
+      vec2.fromValues(
+        Math.cos(performance.now() / 1000),
+        Math.sin(performance.now() / 600)
+      ) as Float32Array
+    );
+    this.mesh.setInstanceProperty(
+      1,
+      'iOffset',
+      vec2.fromValues(
+        Math.sin(performance.now() / 350),
+        Math.cos(performance.now() / 350)
+      ) as Float32Array
+    );
+    this.mesh.setInstanceProperty(
+      2,
+      'iOffset',
+      vec2.fromValues(
+        Math.sin(performance.now() / 750),
+        Math.cos(performance.now() / 500)
+      ) as Float32Array
+    );
 
     this.mesh.render(this.program, 'aPosition', 'aUv');
 

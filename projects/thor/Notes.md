@@ -191,10 +191,28 @@ Stretch exercise: add your own flair to the effect
 - There is a lot of state management to render a single triangle. Replicating this for multiple triangles would quickly become unwieldy.
 - A better approach is to use a single draw call for multiple triangles. We can store attributes about each triangle in a buffer (e.g. position, colour) and use a single draw call to render all of them. This is called instanced rendering.
 - We can define the attributes for each triangle in the vertex shader, and these will be used per instance automatically
-- WebGL buffers have a fixed size, so we need to know the instance count upfront
+- WebGL buffers have a fixed size, so we need to know the instance count (it's possible to resize the buffer, but this is best to avoid as much as possible since it's inefficient due to having to reupload the data each time)
 - You can prefix instance attributes with `i` to indicate they are per instance
 - For instanced rendering, you must also call `vertexAttribDivisor` to change how the buffer is read per attribute. Instead of reading per vertex, it will read the buffer per instance.
   - The `divisor` parameter represents the number of instances to render per buffer entry. Generally this will be 1, unless you have a weird scenario where for example you want 3 triangles to share the exact same instance data.
 - Instead of `drawArrays`, we use `drawArraysInstanced` to render multiple instances
 
 Exercise: implement instancing and update the instance values per frame
+
+## Lesson 11 - WebGL in whiteboards
+
+- Anything that gets rendered in whiteboards will have a renderer in the `gl-primitives` package – e.g. `border-renderer`
+- We use instanced rendering by default since there can be thousands of elements at once on a whiteboard
+- The `aOffset` attribute is used to offset the position of each instance. This is Not to be confused with the `aPosition` attribute which defines the position of each vertex – for every instance, the vertices are the same.
+- The `BOX_GEOMETRY` ranges from -1 to 1, but this was just coincidentally chosen for ease of computations (so that the midpoint is squarely at 0,0). The important thing for _clip space_ is that the output of the vertex shader is between -1 and 1.
+- The `createInstancedVertexArrayLazy` abstraction encapsulates the definitions of the vertex data and the instance data together
+- The `writer` API from `BufferWriter` allows you to write directly into the instance buffer
+- The `InstancedBuffer` class internally keeps track of which IDs are allocated to which positions in the instance buffer (since the buffer itself is just a flat array)
+  - It's entirely dynamic, so we don't need to know the instance count upfront
+- We don't use instancing for the image renderer because every image is a different texture and we can only bind 8-16 texture samplers at once. You can't use instancing for different textures, but you can use it for different positions, rotations, etc.
+  - The exception is if we had duplicate images - then in theory it would be possible, but for every group of images we would need to create an instanced buffer and cleanup, so the state management can get complicated
+- `layout (location=<number>)` prefixes are a minor optimisation that tells the GPU where to expect the data in the buffer. This is not strictly necessary, but it can help with performance so the code (and the GPU) doesn't have to look up attributes by name via `gl.getAttribLocation`.
+- What handles the clip space and performance around it? Is webgl smart enough to optimise out all the stuff that wouldn’t be in frame?
+  - Draw calls outside the screen are still executed, it's on you to know that stuff is outside of view and not render it - e.g. `update-visibility-system`, won't upload those to the vertex buffer
+
+Exercise: implement a simple whiteboard renderer (e.g. triangles) and make a storybook for it

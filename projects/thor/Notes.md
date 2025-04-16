@@ -199,7 +199,7 @@ Stretch exercise: add your own flair to the effect
 
 Exercise: implement instancing and update the instance values per frame
 
-## Lesson 11 - WebGL in whiteboards
+## Lesson 11 - WebGL in whiteboards - 2025-03-03
 
 - Anything that gets rendered in whiteboards will have a renderer in the `gl-primitives` package – e.g. `border-renderer`
 - We use instanced rendering by default since there can be thousands of elements at once on a whiteboard
@@ -216,3 +216,8 @@ Exercise: implement instancing and update the instance values per frame
   - Draw calls outside the screen are still executed, it's on you to know that stuff is outside of view and not render it - e.g. `update-visibility-system`, won't upload those to the vertex buffer
 
 Exercise: implement a simple whiteboard renderer (e.g. triangles) and make a storybook for it
+
+## Lesson 12 - WebGL in whiteboards - 2025-04-10
+
+- The `compute` property of `instancedAttributes` is deprecated - we prefer the `writer` pattern instead to pass through primitive values directly instead of constructing many throwaway objects of an intermediate data shape
+- A stencil buffer acts like a mask (in terms of graphics programs like Photoshop)
